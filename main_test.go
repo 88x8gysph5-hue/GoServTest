@@ -54,42 +54,45 @@ func TestCafeCount(t *testing.T) {
 	handler := http.HandlerFunc(mainHandle)
 
 	requests := []struct {
-		count int
+		count string
+		city  string
+		want  int
 	}{
-		{count: 0},
-		{count: 1},
-		{count: 2},
-		{count: 100},
+		{"0", "moscow", 0},
+		{"1", "moscow", 1},
+		{"2", "moscow", 2},
+		{"100", "moscow", 5},
+
+		{"0", "tula", 0},
+		{"1", "tula", 1},
+		{"100", "tula", 3},
+
+		{"", "moscow", 5},
 	}
 
-	cityRequest := []string{"moscow", "tula"}
+	for _, tc := range requests {
+		response := httptest.NewRecorder()
 
-	for _, city := range cityRequest {
-		for _, v := range requests {
-
-			maxLen := len(cafeList[city])
-			expected := min(v.count, maxLen)
-
-			response := httptest.NewRecorder()
-			req := httptest.NewRequest(
-				"GET",
-				fmt.Sprintf("/cafe?count=%d&city=%s", v.count, city),
-				nil,
-			)
-
-			handler.ServeHTTP(response, req)
-
-			body := response.Body.String()
-
-			var resultCount int
-			if body == "" {
-				resultCount = 0
-			} else {
-				resultCount = len(strings.Split(body, ","))
-			}
-
-			assert.Equal(t, expected, resultCount)
+		url := fmt.Sprintf("/cafe?city=%s", tc.city)
+		if tc.count != "" {
+			url += "&count=" + tc.count
 		}
+
+		req := httptest.NewRequest("GET", url, nil)
+		handler.ServeHTTP(response, req)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		body := response.Body.String()
+
+		var resultCount int
+		if body == "" {
+			resultCount = 0
+		} else {
+			resultCount = len(strings.Split(body, ","))
+		}
+
+		assert.Equal(t, tc.want, resultCount)
 	}
 }
 
@@ -116,20 +119,22 @@ func TestCafeSearch(t *testing.T) {
 
 		handler.ServeHTTP(response, req)
 
+		assert.Equal(t, http.StatusOK, response.Code)
+
 		body := response.Body.String()
 
 		var cafes []string
 		if body != "" {
 			cafes = strings.Split(body, ",")
 		}
-		assert.Equal(t, v.wantCount, len(cafes))
+
+		assert.Len(t, cafes, v.wantCount)
+
 		for _, cafe := range cafes {
-			assert.True(
+			assert.Contains(
 				t,
-				strings.Contains(
-					strings.ToLower(cafe),
-					strings.ToLower(v.search),
-				),
+				strings.ToLower(cafe),
+				strings.ToLower(v.search),
 			)
 		}
 	}
