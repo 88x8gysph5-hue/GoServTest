@@ -74,12 +74,11 @@ func TestCafeCount(t *testing.T) {
 		response := httptest.NewRecorder()
 		var str string = fmt.Sprintf("/cafe?city=%s", re.city)
 		if re.count != "" {
-			str = str + "count=" + re.count
+			str = str + "&count=" + re.count
 		}
 		req := httptest.NewRequest("GET", str, nil)
 		handler.ServeHTTP(response, req)
 		assert.Equal(t, http.StatusOK, response.Code)
-
 		body := response.Body.String()
 		var x []string
 		if body != "" {
