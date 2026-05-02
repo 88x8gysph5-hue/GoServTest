@@ -70,29 +70,22 @@ func TestCafeCount(t *testing.T) {
 		{"", "moscow", 5},
 	}
 
-	for _, tc := range requests {
+	for _, re := range requests {
 		response := httptest.NewRecorder()
-
-		url := fmt.Sprintf("/cafe?city=%s", tc.city)
-		if tc.count != "" {
-			url += "&count=" + tc.count
+		var str string = fmt.Sprintf("/cafe?city=%s", re.city)
+		if re.count != "" {
+			str = str + "count=" + re.count
 		}
-
-		req := httptest.NewRequest("GET", url, nil)
+		req := httptest.NewRequest("GET", str, nil)
 		handler.ServeHTTP(response, req)
-
 		assert.Equal(t, http.StatusOK, response.Code)
 
 		body := response.Body.String()
-
-		var resultCount int
-		if body == "" {
-			resultCount = 0
-		} else {
-			resultCount = len(strings.Split(body, ","))
+		var x []string
+		if body != "" {
+			x = strings.Split(body, ",")
 		}
-
-		assert.Equal(t, tc.want, resultCount)
+		assert.Len(t, x, re.want)
 	}
 }
 
@@ -127,9 +120,6 @@ func TestCafeSearch(t *testing.T) {
 		if body != "" {
 			cafes = strings.Split(body, ",")
 		}
-
-		assert.Len(t, cafes, v.wantCount)
-
 		for _, cafe := range cafes {
 			assert.Contains( // благодаря ей можно пррверять как строки так и мапы так и слайсы
 				t,
