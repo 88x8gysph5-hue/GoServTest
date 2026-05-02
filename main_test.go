@@ -120,6 +120,7 @@ func TestCafeSearch(t *testing.T) {
 		if body != "" {
 			cafes = strings.Split(body, ",")
 		}
+		assert.Len(t, cafes, v.wantCount)
 		for _, cafe := range cafes {
 			assert.Contains( // благодаря ей можно пррверять как строки так и мапы так и слайсы
 				t,
