@@ -131,10 +131,10 @@ func TestCafeSearch(t *testing.T) {
 		assert.Len(t, cafes, v.wantCount)
 
 		for _, cafe := range cafes {
-			assert.Contains(
+			assert.Contains( // благодаря ей можно пррверять как строки так и мапы так и слайсы
 				t,
-				strings.ToLower(cafe),
-				strings.ToLower(v.search),
+				strings.ToLower(cafe),     // строка
+				strings.ToLower(v.search), //. подстрока
 			)
 		}
 	}
